@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>vn-nlp Demo — Vietnamese NLP in the Browser</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, #f97316, #ef4444);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+        header p {
+            color: #94a3b8;
+            font-size: 1.1rem;
+        }
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .tab {
+            padding: 0.6rem 1.2rem;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            background: #1e293b;
+            color: #94a3b8;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        .tab:hover { border-color: #f97316; color: #f97316; }
+        .tab.active {
+            background: #f97316;
+            color: white;
+            border-color: #f97316;
+        }
+        .input-area {
+            margin-bottom: 1rem;
+        }
+        textarea {
+            width: 100%;
+            height: 120px;
+            padding: 1rem;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            background: #1e293b;
+            color: #e2e8f0;
+            font-size: 1rem;
+            font-family: inherit;
+            resize: vertical;
+        }
+        textarea:focus { outline: none; border-color: #f97316; }
+        button.run {
+            padding: 0.7rem 2rem;
+            background: linear-gradient(135deg, #f97316, #ef4444);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        button.run:hover { transform: scale(1.02); }
+        button.run:active { transform: scale(0.98); }
+        .output {
+            margin-top: 1rem;
+            padding: 1rem;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            background: #1e293b;
+            min-height: 80px;
+            font-family: 'Cascadia Code', 'Fira Code', monospace;
+            font-size: 0.9rem;
+            line-height: 1.8;
+            white-space: pre-wrap;
+        }
+        .token {
+            display: inline-block;
+            padding: 2px 8px;
+            margin: 2px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+        .token-Word { background: #166534; color: #bbf7d0; }
+        .token-Punctuation { background: #854d0e; color: #fef08a; }
+        .token-Number { background: #1e40af; color: #bfdbfe; }
+        .token-Unknown { background: #581c87; color: #e9d5ff; }
+        .sentence {
+            display: block;
+            padding: 0.5rem 0.8rem;
+            margin: 0.3rem 0;
+            border-left: 3px solid #f97316;
+            background: #0f172a;
+            border-radius: 0 4px 4px 0;
+        }
+        .result-text {
+            font-size: 1.1rem;
+            color: #34d399;
+        }
+        .status {
+            margin-top: 1rem;
+            padding: 0.5rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            text-align: center;
+        }
+        .status.loading { background: #1e3a5f; color: #60a5fa; }
+        .status.ready { background: #14532d; color: #4ade80; }
+        .status.error { background: #7f1d1d; color: #fca5a5; }
+        footer {
+            margin-top: 3rem;
+            text-align: center;
+            color: #475569;
+            font-size: 0.85rem;
+        }
+        footer a { color: #f97316; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🦀 vn-nlp</h1>
+            <p>Vietnamese NLP in Pure Rust — running in your browser via WebAssembly</p>
+        </header>
+
+        <div class="tabs">
+            <div class="tab active" data-mode="tokenize">Tokenize</div>
+            <div class="tab" data-mode="normalize">Normalize</div>
+            <div class="tab" data-mode="strip">Bỏ dấu</div>
+            <div class="tab" data-mode="lowercase">Lowercase</div>
+            <div class="tab" data-mode="segment">Segment</div>
+        </div>
+
+        <div class="input-area">
+            <textarea id="input" placeholder="Nhập văn bản tiếng Việt...">Xin chào, tôi yêu Việt Nam! Hôm nay trời đẹp. TP.HCM có mưa lớn.</textarea>
+        </div>
+
+        <button class="run" id="runBtn" disabled>⏳ Đang tải WASM...</button>
+
+        <div class="output" id="output">Kết quả sẽ hiển thị ở đây...</div>
+
+        <div class="status loading" id="status">Đang tải WebAssembly module...</div>
+
+        <footer>
+            <p>
+                <a href="https://github.com/j4flmao/vn-nlp">GitHub</a> ·
+                <a href="https://crates.io/crates/vn-nlp">crates.io</a> ·
+                <a href="https://docs.rs/vn-nlp">docs.rs</a>
+            </p>
+            <p>Built with Rust 🦀 + wasm-bindgen</p>
+        </footer>
+    </div>
+
+    <script type="module">
+        // Import WASM module (built with wasm-pack)
+        // Usage: wasm-pack build crates/vn-nlp-wasm --target web --out-dir ../../demo/pkg
+        let wasm = null;
+        let currentMode = 'tokenize';
+
+        // Tab switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                currentMode = tab.dataset.mode;
+            });
+        });
+
+        async function initWasm() {
+            const statusEl = document.getElementById('status');
+            const runBtn = document.getElementById('runBtn');
+
+            try {
+                const module = await import('./pkg/vn_nlp_wasm.js');
+                await module.default();
+                wasm = module;
+                statusEl.className = 'status ready';
+                statusEl.textContent = '✅ WASM loaded — sẵn sàng xử lý!';
+                runBtn.disabled = false;
+                runBtn.textContent = '▶ Chạy';
+            } catch (e) {
+                statusEl.className = 'status error';
+                statusEl.textContent = `❌ Lỗi load WASM: ${e.message}. Build trước: wasm-pack build crates/vn-nlp-wasm --target web --out-dir ../../demo/pkg`;
+                runBtn.textContent = '❌ WASM chưa build';
+
+                // Fallback: demo mode without WASM
+                runBtn.disabled = false;
+                runBtn.textContent = '▶ Chạy (Demo mode)';
+                runBtn.onclick = () => {
+                    document.getElementById('output').innerHTML =
+                        '<span class="result-text">⚠️ WASM chưa build. Chạy lệnh sau để build:\n\n' +
+                        'wasm-pack build crates/vn-nlp-wasm --target web --out-dir ../../demo/pkg\n\n' +
+                        'Sau đó mở lại trang này với HTTP server (ví dụ: python -m http.server)</span>';
+                };
+            }
+        }
+
+        function run() {
+            if (!wasm) return;
+            const input = document.getElementById('input').value;
+            const outputEl = document.getElementById('output');
+
+            try {
+                switch (currentMode) {
+                    case 'tokenize': {
+                        const tokens = wasm.tokenize(input);
+                        outputEl.innerHTML = tokens.map(t =>
+                            `<span class="token token-${t.kind}">${t.text} <small>(${t.kind})</small></span>`
+                        ).join(' ');
+                        break;
+                    }
+                    case 'normalize':
+                        outputEl.innerHTML = `<span class="result-text">${wasm.normalize(input)}</span>`;
+                        break;
+                    case 'strip':
+                        outputEl.innerHTML = `<span class="result-text">${wasm.strip_diacritics(input)}</span>`;
+                        break;
+                    case 'lowercase':
+                        outputEl.innerHTML = `<span class="result-text">${wasm.lowercase_vn(input)}</span>`;
+                        break;
+                    case 'segment': {
+                        const sentences = wasm.segment(input);
+                        outputEl.innerHTML = sentences.map((s, i) =>
+                            `<span class="sentence">[${i + 1}] ${s.text}</span>`
+                        ).join('');
+                        break;
+                    }
+                }
+            } catch (e) {
+                outputEl.innerHTML = `<span style="color:#fca5a5">Error: ${e.message}</span>`;
+            }
+        }
+
+        document.getElementById('runBtn').addEventListener('click', run);
+
+        initWasm();
+    </script>
+</body>
+</html>

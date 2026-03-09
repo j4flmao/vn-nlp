@@ -1,0 +1,20 @@
+[package]
+name = "vn-nlp-python"
+description = "Python bindings for vn-nlp — Vietnamese NLP via PyO3"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[lib]
+name = "vn_nlp"
+crate-type = ["cdylib"]
+doc = false
+
+[dependencies]
+vn-nlp-core = { path = "../vn-nlp-core" }
+vn-nlp-tokenize = { path = "../vn-nlp-tokenize", features = ["dictionary"] }
+vn-nlp-normalize = { path = "../vn-nlp-normalize" }
+vn-nlp-segment = { path = "../vn-nlp-segment" }
+pyo3 = { version = "0.24.1", features = ["extension-module"] }

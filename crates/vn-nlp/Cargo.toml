@@ -1,0 +1,24 @@
+[package]
+name = "vn-nlp"
+description = "Vietnamese NLP library — tokenization, normalization, segmentation"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+keywords.workspace = true
+categories.workspace = true
+readme = "../../README.md"
+
+[features]
+default = ["tokenize", "normalize", "segment"]
+tokenize = ["dep:vn-nlp-tokenize"]
+normalize = ["dep:vn-nlp-normalize"]
+segment = ["dep:vn-nlp-segment"]
+dictionary = ["vn-nlp-tokenize/dictionary"]
+
+[dependencies]
+vn-nlp-core = { path = "../vn-nlp-core" }
+vn-nlp-tokenize = { path = "../vn-nlp-tokenize", optional = true }
+vn-nlp-normalize = { path = "../vn-nlp-normalize", optional = true }
+vn-nlp-segment = { path = "../vn-nlp-segment", optional = true }

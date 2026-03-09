@@ -1,0 +1,24 @@
+[package]
+name = "vn-nlp-tokenize"
+description = "Vietnamese tokenization algorithms for vn-nlp"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[features]
+default = []
+dictionary = []
+
+[dependencies]
+vn-nlp-core = { path = "../vn-nlp-core" }
+
+[dev-dependencies]
+criterion.workspace = true
+
+[[bench]]
+name = "tokenize_bench"
+harness = false

@@ -1,0 +1,14 @@
+[package]
+name = "vn-nlp-normalize"
+description = "Vietnamese text normalization — diacritics, unicode NFC/NFD"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[dependencies]
+vn-nlp-core = { path = "../vn-nlp-core" }
+unicode-normalization.workspace = true

@@ -1,0 +1,13 @@
+[package]
+name = "vn-nlp-core"
+description = "Core types, traits, and errors for vn-nlp"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[dependencies]
+thiserror.workspace = true

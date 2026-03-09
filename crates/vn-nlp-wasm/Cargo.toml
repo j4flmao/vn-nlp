@@ -1,0 +1,20 @@
+[package]
+name = "vn-nlp-wasm"
+description = "WASM bindings for vn-nlp — Vietnamese NLP in the browser"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+vn-nlp-core = { path = "../vn-nlp-core" }
+vn-nlp-tokenize = { path = "../vn-nlp-tokenize" }
+vn-nlp-normalize = { path = "../vn-nlp-normalize" }
+vn-nlp-segment = { path = "../vn-nlp-segment" }
+wasm-bindgen = "0.2"
+serde = { version = "1", features = ["derive"] }
+serde-wasm-bindgen = "0.6"

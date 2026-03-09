@@ -1,0 +1,28 @@
+[workspace]
+members = [
+    "crates/vn-nlp",
+    "crates/vn-nlp-core",
+    "crates/vn-nlp-tokenize",
+    "crates/vn-nlp-normalize",
+    "crates/vn-nlp-segment",
+    "crates/vn-nlp-wasm",
+    "crates/vn-nlp-python",
+]
+resolver = "2"
+
+[workspace.package]
+version = "0.1.1"
+edition = "2021"
+authors = ["j4flmao <j4flmao@users.noreply.github.com>"]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/j4flmao/vn-nlp"
+homepage = "https://github.com/j4flmao/vn-nlp"
+documentation = "https://docs.rs/vn-nlp"
+keywords = ["vietnamese", "nlp", "tokenizer", "text-processing", "linguistics"]
+categories = ["text-processing", "internationalization"]
+rust-version = "1.83.0"
+
+[workspace.dependencies]
+thiserror = "1"
+unicode-normalization = "0.1"
+criterion = { version = "0.5", features = ["html_reports"] }

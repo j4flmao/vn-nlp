@@ -1,0 +1,69 @@
+name: Version Bump
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  bump:
+    name: Bump Version & Create Tag
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-actions[bot]'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get current version
+        id: current
+        run: |
+          VERSION=$(grep -m1 'version = ' Cargo.toml | sed 's/.*"\(.*\)".*/\1/')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Current version: $VERSION"
+
+      - name: Calculate next version
+        id: next
+        run: |
+          CURRENT="${{ steps.current.outputs.version }}"
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
+          PATCH=$((PATCH + 1))
+          if [ "$PATCH" -gt 9 ]; then
+            PATCH=0
+            MINOR=$((MINOR + 1))
+          fi
+          
+          NEXT="$MAJOR.$MINOR.$PATCH"
+          echo "version=$NEXT" >> $GITHUB_OUTPUT
+          echo "Next version: $NEXT"
+
+      - name: Update version in Cargo.toml
+        run: |
+          NEXT="${{ steps.next.outputs.version }}"
+          # Update workspace version
+          sed -i "s/^version = \".*\"/version = \"$NEXT\"/" Cargo.toml
+          echo "Updated Cargo.toml to $NEXT"
+          grep 'version = ' Cargo.toml | head -5
+
+      - name: Update CHANGELOG.md
+        run: |
+          NEXT="${{ steps.next.outputs.version }}"
+          DATE=$(date +%Y-%m-%d)
+          # Replace [Unreleased] with version header, add new Unreleased
+          sed -i "s/^## \[Unreleased\]/## [Unreleased]\n\n## [$NEXT] — $DATE/" CHANGELOG.md
+          echo "Updated CHANGELOG.md with v$NEXT"
+
+      - name: Commit & Tag
+        run: |
+          NEXT="${{ steps.next.outputs.version }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Cargo.toml CHANGELOG.md
+          git commit -m "chore: bump version to v$NEXT"
+          git tag -a "v$NEXT" -m "Release v$NEXT"
+          git push origin main --tags
+          echo "✅ Tagged v$NEXT and pushed to main"
+          echo "🚀 Release workflow will trigger automatically"
